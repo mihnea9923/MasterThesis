@@ -52,7 +52,7 @@ def detrend_poly_by_prefecture(df, value_col, order=3):
     time_index = np.arange(len(values), dtype=float)
 
     valid_mask = np.isfinite(values)
-
+    
     trend = np.polyval(
         np.polyfit(time_index[valid_mask], values[valid_mask], deg=order),
         time_index
@@ -350,25 +350,8 @@ def main(cfg: Config = CFG) -> None:
 
     formulas = {
         "raw_temperature": f"cases ~ {cfg.temp_col}_lag0 + {controls}",
-        "standardized_temperature": f"cases ~ {cfg.temp_col}_std_anom_lag0 + {controls}",
         "flipflops": (
             "cases ~ c2w_event_lag0 + w2c_event_lag0 "
-            "+ c2w_transition_intensity_lag0 + w2c_transition_intensity_lag0 "
-            f"+ {controls}"
-        ),
-        "raw_plus_flipflops": (
-            f"cases ~ {cfg.temp_col}_lag0 "
-            "+ c2w_event_lag0 + w2c_event_lag0 "
-            "+ c2w_transition_intensity_lag0 + w2c_transition_intensity_lag0 "
-            f"+ {controls}"
-        ),
-        "lags_raw_temperature": (
-            f"cases ~ {cfg.temp_col}_lag0 + {cfg.temp_col}_lag1 + {cfg.temp_col}_lag2 + {cfg.temp_col}_lag3 "
-            f"+ {controls}"
-        ),
-        "lags_flipflops": (
-            "cases ~ c2w_event_lag0 + c2w_event_lag1 + c2w_event_lag2 + c2w_event_lag3 "
-            "+ w2c_event_lag0 + w2c_event_lag1 + w2c_event_lag2 + w2c_event_lag3 "
             "+ c2w_transition_intensity_lag0 + w2c_transition_intensity_lag0 "
             f"+ {controls}"
         ),
@@ -385,11 +368,7 @@ def main(cfg: Config = CFG) -> None:
     rows = []
     coefs = []
 
-    print("Fitting Poisson models...")
     for name, formula in formulas.items():
-        # Drop rows with missing variables required by each formula.
-        # statsmodels will also drop missing rows internally, but explicit drop
-        # makes n_obs transparent.
         model = fit_poisson_model(formula, model_df)
         models[name] = model
         rows.append(model_summary_row(name, model, int(model.nobs)))
@@ -400,20 +379,13 @@ def main(cfg: Config = CFG) -> None:
     comparison["delta_aic"] = comparison["aic"] - comparison["aic"].min()
     comparison_file = cfg.out_dir / "model_comparison_results.csv"
     comparison.to_csv(comparison_file, index=False)
-    print(f"Saved: {comparison_file}")
 
     coef_df = pd.concat(coefs, ignore_index=True)
     coef_file = cfg.out_dir / "model_coefficients.csv"
     coef_df.to_csv(coef_file, index=False)
-    print(f"Saved: {coef_file}")
 
     print("\nBest model by AIC:")
     print(comparison.head(1).to_string(index=False))
-
-    print("\nInterpretation rule:")
-    print("- If flipflops has lower AIC than raw_temperature, flip-flops alone fit better than raw T.")
-    print("- If raw_plus_flipflops has lower AIC than raw_temperature, flip-flops add information beyond raw T.")
-    print("- Check coefficient RR and CIs in model_coefficients.csv for direction and uncertainty.")
 
 
 if __name__ == "__main__":
