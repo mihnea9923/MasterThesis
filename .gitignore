@@ -1,6 +1,7 @@
 basic_implementation/*
-./cardio_clean.csv
-./daily_meteo_prefs_2005-2019.csv
-./population_ts.csv
-outputs/ohca_flipflop_analysis_results.csv
+jpn_admbnda_adm1_2019/*
+cardio_clean.csv
+daily_meteo_prefs_2005-2019.csv
+population_ts.csv
+outputs/ohca_temperature_flipflop_analysis_dataset.csv
 outputs/temperature_flipflops_prefectures.csv
