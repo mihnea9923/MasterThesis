@@ -205,14 +205,14 @@ def add_flipflops_one_prefecture(
     return df
 
 
-def add_lags(df: pd.DataFrame, group_col: str, variables: list[str], lags: tuple[int, ...]) -> pd.DataFrame:
-    out = df.sort_values([group_col, "date"]).copy()
+def add_lags(df: pd.DataFrame, variables: list[str], lags: tuple[int, ...]) -> pd.DataFrame:
+    out = df.sort_values(["prefecture_code", "date"]).copy()
     for var in variables:
         for lag in lags:
             if lag == 0:
                 out[f"{var}_lag0"] = out[var]
             else:
-                out[f"{var}_lag{lag}"] = out.groupby(group_col)[var].shift(lag)
+                out[f"{var}_lag{lag}"] = out.groupby("prefecture_code")[var].shift(lag)
     return out
 
 
@@ -303,6 +303,7 @@ def main(cfg: Config = CFG) -> None:
     daily_cases = aggregate_ohca_daily(cardio)
     pop_total = aggregate_population(pop)
 
+    # We combine the flip-flop data with the OHCA cases
     analysis = flipflops.merge(daily_cases, on=["prefecture_code", "date"], how="left")
     analysis["cases"] = analysis["cases"].fillna(0).astype(int)
     analysis["year"] = analysis["date"].dt.year
@@ -310,9 +311,11 @@ def main(cfg: Config = CFG) -> None:
     analysis["dow"] = analysis["date"].dt.dayofweek
     analysis["time_index"] = (analysis["date"] - analysis["date"].min()).dt.days
 
+    # Now add the population data to compute incidence rates and use as offset in the models. I also merge on year because population changes
     analysis = analysis.merge(pop_total, on=["prefecture_code", "year"], how="left")
     analysis = analysis.dropna(subset=["population"]).copy()
     analysis["log_population"] = np.log(analysis["population"])
+    # I compute this incidence for descriptive purposes, but I'm not using this for the model
     analysis["incidence_per_100k"] = analysis["cases"] / analysis["population"] * 100000
 
     # Fill event intensity/duration missing values with 0 for modeling.
@@ -322,7 +325,7 @@ def main(cfg: Config = CFG) -> None:
     ]:
         analysis[col] = analysis[col].fillna(0)
 
-    # Add lagged exposure variables.
+    # Add lagged exposure variables. Thos variable can have potential delayed effect so that is why I chose them
     lag_vars = [
         cfg.temp_col,
         f"{cfg.temp_col}_std_anom",
@@ -331,7 +334,7 @@ def main(cfg: Config = CFG) -> None:
         "rh", "ah", "tp", "nw_wind",
     ]
     lag_vars = [v for v in lag_vars if v in analysis.columns]
-    analysis = add_lags(analysis, "prefecture_code", lag_vars, cfg.lags)
+    analysis = add_lags(analysis, lag_vars, cfg.lags)
 
     analysis_file = cfg.out_dir / "ohca_temperature_flipflop_analysis_dataset.csv"
     analysis.to_csv(analysis_file, index=False)
@@ -344,6 +347,7 @@ def main(cfg: Config = CFG) -> None:
         if v in model_df.columns:
             weather_controls.append(v)
 
+    # We want to eliminate the influence of these fields that could confound the relationship between temperature/flip-flops and OHCA
     controls = "C(prefecture_code) + C(month) + C(dow) + time_index + I(time_index ** 2)"
     if weather_controls:
         controls += " + " + " + ".join(weather_controls)
@@ -351,7 +355,7 @@ def main(cfg: Config = CFG) -> None:
     formulas = {
         "raw_temperature": f"cases ~ {cfg.temp_col}_lag0 + {controls}",
         "flipflops": (
-            "cases ~ c2w_event_lag0 + w2c_event_lag0 "
+            f"cases ~ c2w_event_lag0 + w2c_event_lag0 + {cfg.temp_col}_lag0 "
             "+ c2w_transition_intensity_lag0 + w2c_transition_intensity_lag0 "
             f"+ {controls}"
         ),
