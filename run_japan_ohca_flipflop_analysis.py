@@ -8,7 +8,13 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-from scipy import stats
+from analysis_plot import (
+    plot_contributions_peak_vs_normal,
+    plot_fit,
+    plot_flipflop_vs_cases,
+    plot_flipflop_lag,
+)
+from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("ignore")
 
@@ -265,6 +271,7 @@ def extract_coefficients(model_name: str, model) -> pd.DataFrame:
     return out
 
 
+
 def main(cfg: Config = CFG) -> None:
     ensure_out_dir(cfg.out_dir)
 
@@ -334,12 +341,23 @@ def main(cfg: Config = CFG) -> None:
         "rh", "ah", "tp", "nw_wind",
     ]
     lag_vars = [v for v in lag_vars if v in analysis.columns]
+    
     analysis = add_lags(analysis, lag_vars, cfg.lags)
+    # We need to standardize the time index and temperature to make the model coefficients more comparable. The time series
+    # is quite long so it will end-up artificially dominating its contribution in the plot below simply because it has a large value 
+    scale_cols = [
+    "time_index",
+    "t2m_lag0", "t2m_lag1", "t2m_lag2", "t2m_lag3",
+    "rh_lag0", "tp_lag0", "nw_wind_lag0"]
 
+    scale_cols = [c for c in scale_cols if c in analysis.columns]
+    scaler = StandardScaler()
+    analysis[scale_cols] = scaler.fit_transform(analysis[scale_cols])
+    
     analysis_file = cfg.out_dir / "ohca_temperature_flipflop_analysis_dataset.csv"
     analysis.to_csv(analysis_file, index=False)
     print(f"Saved: {analysis_file}")
-
+    
     model_df = analysis.dropna(subset=["population", cfg.temp_col, f"{cfg.temp_col}_std_anom_lag0"]).copy()
 
     weather_controls = []
@@ -379,6 +397,11 @@ def main(cfg: Config = CFG) -> None:
         coefs.append(extract_coefficients(name, model))
         print(f"{name:25s} AIC = {model.aic:,.2f}")
 
+    for name, model in models.items():
+        model_df[f"pred_{name}"] = model.predict(model_df) * model_df["population"]    
+    for name in models:
+        model_df[f"resid_{name}"] = model_df["cases"] - model_df[f"pred_{name}"]
+    
     comparison = pd.DataFrame(rows).sort_values("aic")
     comparison["delta_aic"] = comparison["aic"] - comparison["aic"].min()
     comparison_file = cfg.out_dir / "model_comparison_results.csv"
@@ -390,7 +413,26 @@ def main(cfg: Config = CFG) -> None:
 
     print("\nBest model by AIC:")
     print(comparison.head(1).to_string(index=False))
+    
+    model_df["any_flip_lag0"] = ((model_df["c2w_event_lag0"] == 1) | (model_df["w2c_event_lag0"] == 1)).astype(int)
+    peak_threshold = model_df["cases"].quantile(0.90)
+    model_df["is_peak"] = (model_df["cases"] > peak_threshold).astype(int)
 
+    p_peak_flip = model_df.loc[model_df["any_flip_lag0"] == 1, "is_peak"].mean()
+    p_peak_no_flip = model_df.loc[model_df["any_flip_lag0"] == 0, "is_peak"].mean()
+
+    print("P(peak | any flip):", p_peak_flip)
+    print("P(peak | no flip):", p_peak_no_flip)
+    print("Relative increase:", p_peak_flip / p_peak_no_flip)
+    
+    # Choosing Tokyo for plotting because it has the most cases
+    pref = "JP-13"
+    for model_name in models.keys():
+        plot_fit(model_df, model_name, pref)
+    
+    plot_flipflop_lag(model_df, pref, lag=2)
+    plot_flipflop_vs_cases(model_df, pref)
+    plot_contributions_peak_vs_normal(models["flipflops"], model_df, quantile=0.90)
 
 if __name__ == "__main__":
     main()
