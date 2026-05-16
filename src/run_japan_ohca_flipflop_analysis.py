@@ -20,11 +20,11 @@ warnings.filterwarnings("ignore")
 
 @dataclass
 class Config:
-    out_dir: Path = Path("outputs")
-
-    weather_file: str = "daily_meteo_prefs_2005-2019.csv"
-    ohca_file: str = "cardio_clean.csv"
-    population_file: str = "population_ts.csv"
+    out_dir: Path = Path("../outputs")
+    data_path: str = "../data"
+    weather_file: str = f"{data_path}/daily_meteo_prefs_2005-2019.csv"
+    ohca_file: str = f"{data_path}/cardio_clean.csv"
+    population_file: str = f"{data_path}/population_ts.csv"
 
     exclude_prefectures: tuple[str, ...] = ("JP-12",)  # Alejandro's suggestion to remove this prefecture
 
