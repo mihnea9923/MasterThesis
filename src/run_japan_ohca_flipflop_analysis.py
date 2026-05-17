@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 import warnings
 
@@ -14,37 +13,13 @@ from analysis_plot import (
     plot_flipflop_vs_cases,
     plot_flipflop_lag,
 )
+from config import Config
+from helpers import export_intermediate_series, ensure_out_dir
 from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("ignore")
 
-@dataclass
-class Config:
-    out_dir: Path = Path("../outputs")
-    data_path: str = "../data"
-    weather_file: str = f"{data_path}/daily_meteo_prefs_2005-2019.csv"
-    ohca_file: str = f"{data_path}/cardio_clean.csv"
-    population_file: str = f"{data_path}/population_ts.csv"
-
-    exclude_prefectures: tuple[str, ...] = ("JP-12",)  # Alejandro's suggestion to remove this prefecture
-
-    temp_col: str = "t2m"
-    max_gap: int = 5
-    rolling_temp_window: int = 5
-    climatology_window: int = 31
-    std_threshold: float = 1.0
-    detrend_order: int = 3
-
-    # Lag days to create for temperature and flip-flop exposure variables.
-    # lag0 = same day, lag1 = previous day, etc.
-    lags: tuple[int, ...] = (0, 1, 2, 3)
-
-
 CFG = Config()
-
-def ensure_out_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
 
 def parse_date(s: pd.Series) -> pd.Series:
     return pd.to_datetime(s, format="mixed", errors="coerce").dt.normalize()
@@ -275,11 +250,12 @@ def extract_coefficients(model_name: str, model) -> pd.DataFrame:
 def main(cfg: Config = CFG) -> None:
     ensure_out_dir(cfg.out_dir)
 
-    meteo = pd.read_csv(cfg.weather_file)
-    meteo["date"] = parse_date(meteo["date"])
-    meteo = meteo.dropna(subset=["date", "prefecture_code", cfg.temp_col]).copy()
-    meteo = meteo[~meteo["prefecture_code"].isin(cfg.exclude_prefectures)].copy()
-    meteo = meteo.sort_values(["prefecture_code", "date"])
+    meteo_all = pd.read_csv(cfg.weather_file)
+    meteo_all["date"] = parse_date(meteo_all["date"])
+    meteo_all = meteo_all.dropna(subset=["date", "prefecture_code", cfg.temp_col]).copy()
+    meteo_all = meteo_all.sort_values(["prefecture_code", "date"])
+
+    meteo = meteo_all[~meteo_all["prefecture_code"].isin(cfg.exclude_prefectures)].copy()
 
     cardio = pd.read_csv(cfg.ohca_file)
     cardio["date"] = parse_date(cardio["date"])
@@ -357,6 +333,16 @@ def main(cfg: Config = CFG) -> None:
     analysis_file = cfg.out_dir / "ohca_temperature_flipflop_analysis_dataset.csv"
     analysis.to_csv(analysis_file, index=False)
     print(f"Saved: {analysis_file}")
+    
+    export_intermediate_series(
+    cfg,
+    meteo_all,
+    meteo,
+    daily_cases,
+    pop_total,
+    flipflops,
+    analysis,
+)
     
     model_df = analysis.dropna(subset=["population", cfg.temp_col, f"{cfg.temp_col}_std_anom_lag0"]).copy()
 
