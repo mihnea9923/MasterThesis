@@ -6,3 +6,4 @@ population_ts.csv
 outputs/ohca_temperature_flipflop_analysis_dataset.csv
 outputs/temperature_flipflops_prefectures.csv
 */__pycache__/*
+outputs/intermediate_series/model_ready_analysis_dataset.csv

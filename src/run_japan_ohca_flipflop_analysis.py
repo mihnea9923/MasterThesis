@@ -222,11 +222,20 @@ def fit_poisson_model(formula: str, data: pd.DataFrame) -> sm.regression.linear_
 
 
 def model_summary_row(name: str, model, n: int) -> dict:
+    n_obs = int(model.nobs)
+    n_parameters = len(model.params)
+    log_likelihood = model.llf
+
+    aic = -2 * log_likelihood + 2 * n_parameters
+    bic = -2 * log_likelihood + np.log(n_obs) * n_parameters
+
     return {
         "model": name,
-        "n_obs": n,
-        "aic": model.aic,
-        "bic_llf": model.bic_llf,
+        "n_obs": n_obs,
+        "n_parameters": n_parameters,
+        "log_likelihood": log_likelihood,
+        "AIC": aic,
+        "BIC": bic,
         "deviance": model.deviance,
         "df_resid": model.df_resid,
     }
@@ -358,7 +367,11 @@ def main(cfg: Config = CFG) -> None:
 
     formulas = {
         "raw_temperature": f"cases ~ {cfg.temp_col}_lag0 + {controls}",
-        "flipflops": (
+        "raw_temperature_lags": (
+            f"cases ~ {cfg.temp_col}_lag0 + {cfg.temp_col}_lag1 + {cfg.temp_col}_lag2 + {cfg.temp_col}_lag3 "
+            f"+ {controls}"
+        ),
+        "flipflops_plus_temperature": (
             f"cases ~ c2w_event_lag0 + w2c_event_lag0 + {cfg.temp_col}_lag0 "
             "+ c2w_transition_intensity_lag0 + w2c_transition_intensity_lag0 "
             f"+ {controls}"
@@ -381,15 +394,28 @@ def main(cfg: Config = CFG) -> None:
         models[name] = model
         rows.append(model_summary_row(name, model, int(model.nobs)))
         coefs.append(extract_coefficients(name, model))
-        print(f"{name:25s} AIC = {model.aic:,.2f}")
+        row = model_summary_row(name, model, int(model.nobs))
+        rows.append(row)
+
+        print(
+            f"{name:35s} "
+            f"k = {row['n_parameters']:3d} | "
+            f"logLik = {row['log_likelihood']:,.2f} | "
+            f"AIC = {row['AIC']:,.2f} | "
+            f"BIC = {row['BIC']:,.2f}"
+)
 
     for name, model in models.items():
         model_df[f"pred_{name}"] = model.predict(model_df) * model_df["population"]    
     for name in models:
         model_df[f"resid_{name}"] = model_df["cases"] - model_df[f"pred_{name}"]
     
-    comparison = pd.DataFrame(rows).sort_values("aic")
-    comparison["delta_aic"] = comparison["aic"] - comparison["aic"].min()
+    comparison = pd.DataFrame(rows)
+    comparison["delta_AIC"] = comparison["AIC"] - comparison["AIC"].min()
+    comparison["delta_BIC"] = comparison["BIC"] - comparison["BIC"].min()
+
+    comparison = comparison.sort_values("AIC")
+
     comparison_file = cfg.out_dir / "model_comparison_results.csv"
     comparison.to_csv(comparison_file, index=False)
 
@@ -418,7 +444,7 @@ def main(cfg: Config = CFG) -> None:
     
     plot_flipflop_lag(model_df, pref, lag=2)
     plot_flipflop_vs_cases(model_df, pref)
-    plot_contributions_peak_vs_normal(models["flipflops"], model_df, quantile=0.90)
+    plot_contributions_peak_vs_normal(models["flipflops_plus_temperature"], model_df, quantile=0.90)
 
 if __name__ == "__main__":
     main()
