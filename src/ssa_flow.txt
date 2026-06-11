@@ -1,0 +1,4 @@
+python ssa_decomposition.py &&
+python ssa_component_spectral_analysis.py && 
+python spectral_analysis_dominant_summary.py &&
+python ssa_diagnostics.py

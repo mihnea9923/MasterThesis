@@ -168,10 +168,10 @@ def ssa_decompose_series(series: pd.Series, window_size: int = WINDOW_SIZE) -> t
     for component_id, component in enumerate(components):
         period, spectral_power = dominant_period_days(component)
 
-        if cumulative_variance[component_id] > SIGNAL_VARIANCE_CUTOFF:
+        band = classify_period(period)
+
+        if variance_fraction[component_id] < 1e-5:
             band = "noise"
-        else:
-            band = classify_period(period)
 
         reconstructed_parts[band] += component
 
