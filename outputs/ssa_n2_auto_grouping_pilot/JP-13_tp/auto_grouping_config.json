@@ -1,0 +1,11 @@
+{
+  "prefecture_code": "JP-13",
+  "variable": "tp",
+  "window_rule": "L = N // 2",
+  "retained_components": 400,
+  "wcor_threshold": 0.7,
+  "cluster_linkage": "complete",
+  "component_dissimilarity": "1 - absolute W-correlation",
+  "baseline_period_fraction": 0.75,
+  "acceptance_rule": "RC1 may be accepted as baseline; other accepted groups require at least two components. Singletons and unresolved frequencies remain in unresolved_retained_components."
+}

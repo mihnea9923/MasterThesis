@@ -1,0 +1,15 @@
+target_variable,frequency_band,selected_candidate,learning_rate,max_iter,max_leaf_nodes,min_samples_leaf,l2_regularization,train_rows,validation_rows,test_rows,n_prefectures,model_file
+cases,trend,medium,0.05,250,31,50,1.0,201618,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_trend.joblib
+cases,interannual,regularized,0.03,300,31,100,10.0,179703,14965,29930,41,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_interannual.joblib
+cases,annual,medium,0.05,250,31,50,1.0,200712,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_annual.joblib
+cases,semiannual,medium,0.05,250,31,50,1.0,200269,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_semiannual.joblib
+cases,seasonal_subannual,shallow,0.05,150,15,50,1.0,200324,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_seasonal_subannual.joblib
+cases,subseasonal,shallow,0.05,150,15,50,1.0,200750,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_subseasonal.joblib
+cases,high_frequency,shallow,0.05,150,15,50,1.0,201047,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_cases_high_frequency.joblib
+incidence_per_100k,trend,regularized,0.03,300,31,100,10.0,201618,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_trend.joblib
+incidence_per_100k,interannual,shallow,0.05,150,15,50,1.0,179703,14965,29930,41,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_interannual.joblib
+incidence_per_100k,annual,medium,0.05,250,31,50,1.0,200714,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_annual.joblib
+incidence_per_100k,semiannual,medium,0.05,250,31,50,1.0,200255,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_semiannual.joblib
+incidence_per_100k,seasonal_subannual,shallow,0.05,150,15,50,1.0,200308,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_seasonal_subannual.joblib
+incidence_per_100k,subseasonal,shallow,0.05,150,15,50,1.0,200749,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_subseasonal.joblib
+incidence_per_100k,high_frequency,shallow,0.05,150,15,50,1.0,201053,16790,33580,46,outputs/models/hist_gradient_boosting/serialized_models/hgb_incidence_per_100k_high_frequency.joblib

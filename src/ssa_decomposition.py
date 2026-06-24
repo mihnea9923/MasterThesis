@@ -69,7 +69,6 @@ def dominant_period_days(component: np.ndarray) -> tuple[float, float]:
     freqs = np.fft.rfftfreq(len(x), d=1.0)
     power = np.abs(np.fft.rfft(x)) ** 2
 
-    # Ignore zero frequency.
     if len(freqs) <= 1:
         return np.inf, 0.0
 
@@ -129,7 +128,6 @@ def ssa_decompose_series(series: pd.Series, window_size: int = WINDOW_SIZE) -> t
         metadata = pd.DataFrame()
         return reconstructed, metadata
 
-    # pyts expects shape: (n_samples, n_timestamps)
     X = x.reshape(1, -1)
 
     this_window_size = min(window_size, len(x) // 2)
@@ -140,7 +138,6 @@ def ssa_decompose_series(series: pd.Series, window_size: int = WINDOW_SIZE) -> t
     )
 
     components = ssa.fit_transform(X)[0]
-    # components shape: (n_components, n_timestamps)
 
     component_variance = np.var(components, axis=1)
     total_component_variance = component_variance.sum()

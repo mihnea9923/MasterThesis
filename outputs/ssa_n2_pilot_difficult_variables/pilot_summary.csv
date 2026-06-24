@@ -1,0 +1,4 @@
+prefecture_code,variable,n_observations,window_length,number_of_windows,window_fraction,number_of_retained_components,retained_trajectory_energy_fraction,reconstruction_rmse,reconstruction_correlation
+JP-13,t2m_std_anom,5478,2739,2740,0.5,400,0.9161257697584905,0.27464293012611335,0.9623941533464364
+JP-13,c2w_event,5478,2739,2740,0.5,400,0.41267736463508914,0.05407742797769304,0.7001232140823568
+JP-13,tp,5478,2739,2740,0.5,400,0.6451349088373733,14.878677705867048,0.7727286480257894

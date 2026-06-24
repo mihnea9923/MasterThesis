@@ -1,0 +1,36 @@
+{
+  "prefecture_code": "JP-13",
+  "variable": "t2m",
+  "window_rule": "L = N // 2",
+  "number_of_retained_components": 100,
+  "candidate_groups": {
+    "baseline": [
+      1
+    ],
+    "annual_primary": [
+      2,
+      3
+    ],
+    "semiannual": [
+      4,
+      5
+    ],
+    "seasonal_121d": [
+      6,
+      7
+    ],
+    "annual_secondary_322d": [
+      8,
+      9
+    ],
+    "seasonal_71d": [
+      10,
+      11
+    ],
+    "seasonal_100d": [
+      12,
+      13
+    ]
+  },
+  "note": "These are pilot groups based on adjacent eigenvector pairs, elementary reconstructed components, W-correlation diagnostics, and period estimates."
+}

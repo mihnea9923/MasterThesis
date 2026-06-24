@@ -1,0 +1,44 @@
+{
+  "input_file": "outputs/modeling/frequency_lagged_dataset.csv.gz",
+  "targets": [
+    "cases",
+    "incidence_per_100k"
+  ],
+  "frequency_bands": [
+    "trend",
+    "interannual",
+    "annual",
+    "semiannual",
+    "seasonal_subannual",
+    "subseasonal",
+    "high_frequency"
+  ],
+  "numeric_features": [
+    "t2m_lagged",
+    "t2m_std_anom_lagged",
+    "c2w_event_lagged",
+    "w2c_event_lagged",
+    "c2w_transition_intensity_lagged",
+    "w2c_transition_intensity_lagged",
+    "ah_lagged",
+    "rh_lagged",
+    "tp_lagged",
+    "nw_wind_lagged"
+  ],
+  "categorical_features": [
+    "prefecture_code"
+  ],
+  "alpha_candidates": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "model": "Ridge",
+  "prefecture_handling": "one-hot fixed effects",
+  "alpha_selection_metric": "validation RMSE",
+  "final_fit": "train plus validation",
+  "test_period": "2018-01-01 through 2019-12-31"
+}

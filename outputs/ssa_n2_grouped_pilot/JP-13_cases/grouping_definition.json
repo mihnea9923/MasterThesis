@@ -1,0 +1,38 @@
+{
+  "prefecture_code": "JP-13",
+  "variable": "cases",
+  "window_rule": "L = N // 2",
+  "number_of_retained_components": 100,
+  "candidate_groups": {
+    "baseline": [
+      1
+    ],
+    "annual_primary": [
+      2,
+      3
+    ],
+    "interannual_long_candidate": [
+      4,
+      5
+    ],
+    "low_frequency_1369d_candidate": [
+      6
+    ],
+    "semiannual": [
+      7,
+      8
+    ],
+    "interannual_1096d_candidate": [
+      9
+    ],
+    "annual_secondary_304d": [
+      10,
+      11
+    ],
+    "weekly_high_frequency": [
+      12,
+      13
+    ]
+  },
+  "note": "Clear adjacent oscillatory pairs were grouped together. Ambiguous low-frequency components were reconstructed separately and are not yet merged into a final interannual component."
+}

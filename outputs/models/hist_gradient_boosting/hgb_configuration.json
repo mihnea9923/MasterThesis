@@ -1,0 +1,62 @@
+{
+  "input_file": "outputs/modeling/frequency_lagged_dataset.csv.gz",
+  "model": "HistGradientBoostingRegressor",
+  "targets": [
+    "cases",
+    "incidence_per_100k"
+  ],
+  "frequency_bands": [
+    "trend",
+    "interannual",
+    "annual",
+    "semiannual",
+    "seasonal_subannual",
+    "subseasonal",
+    "high_frequency"
+  ],
+  "numeric_features": [
+    "t2m_lagged",
+    "t2m_std_anom_lagged",
+    "c2w_event_lagged",
+    "w2c_event_lagged",
+    "c2w_transition_intensity_lagged",
+    "w2c_transition_intensity_lagged",
+    "ah_lagged",
+    "rh_lagged",
+    "tp_lagged",
+    "nw_wind_lagged"
+  ],
+  "categorical_feature": "prefecture_code",
+  "parameter_candidates": [
+    {
+      "candidate_name": "shallow",
+      "learning_rate": 0.05,
+      "max_iter": 150,
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 50,
+      "l2_regularization": 1.0
+    },
+    {
+      "candidate_name": "medium",
+      "learning_rate": 0.05,
+      "max_iter": 250,
+      "max_leaf_nodes": 31,
+      "min_samples_leaf": 50,
+      "l2_regularization": 1.0
+    },
+    {
+      "candidate_name": "regularized",
+      "learning_rate": 0.03,
+      "max_iter": 300,
+      "max_leaf_nodes": 31,
+      "min_samples_leaf": 100,
+      "l2_regularization": 10.0
+    }
+  ],
+  "maximum_tuning_rows": 120000,
+  "maximum_importance_rows": 20000,
+  "permutation_repeats": 5,
+  "selection_metric": "validation RMSE",
+  "final_fit": "train plus validation",
+  "test_period": "2018-01-01 through 2019-12-31"
+}

@@ -1,0 +1,3 @@
+prefecture_code,variable,n_observations,window_length,number_of_windows,window_fraction,number_of_retained_components,retained_trajectory_energy_fraction,reconstruction_rmse,reconstruction_correlation
+JP-13,cases,5478,2739,2740,0.5,100,0.956119801625137,4.468670487739462,0.7924159836747884
+JP-13,t2m,5478,2739,2740,0.5,100,0.9847555075345977,1.9285052549855015,0.971876632268261

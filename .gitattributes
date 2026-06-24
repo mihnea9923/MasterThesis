@@ -1,2 +1,5 @@
 outputs/intermediate_series/model_ready_analysis_dataset.csv filter=lfs diff=lfs merge=lfs -text
 outputs/ssa/ssa_reconstructed_series.csv.gz filter=lfs diff=lfs merge=lfs -text
+outputs/modeling/frequency_lagged_dataset.csv.gz filter=lfs diff=lfs merge=lfs -text
+outputs/ssa_n2/ssa_reconstructed_series.csv.gz filter=lfs diff=lfs merge=lfs -text
+outputs/intermediate_series/postprocessed_temperature_flipflops_by_prefecture.csv filter=lfs diff=lfs merge=lfs -text
